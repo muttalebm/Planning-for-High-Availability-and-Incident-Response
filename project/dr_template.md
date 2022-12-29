@@ -1,21 +1,53 @@
 # Infrastructure
 
 ## AWS Zones
-Identify your zones here
+Primary Zone: `us-east-2`
+
+Secondary Zone: `us-west-1`
 
 ## Servers and Clusters
 
 ### Table 1.1 Summary
-| Asset      | Purpose           | Size                                                                   | Qty                                                             | DR                                                                                                           |
-|------------|-------------------|------------------------------------------------------------------------|-----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| Asset name | Brief description | AWS size eg. t3.micro (if applicable, not all assets will have a size) | Number of nodes/replicas or just how many of a particular asset | Identify if this asset is deployed to DR, replicated, created in multiple locations or just stored elsewhere |
+| Asset                | Purpose                                        | Size                    | Qty                 | DR                      |
+|----------------------|------------------------------------------------|-------------------------|---------------------|-------------------------|
+| EC2 instance Primary | Application Server                             | t3.micro                | 3                   | replicated in us-west-1 |
+| EC2 instance DR      | Replicated Application Server                  | t3.micro                | 3                   |                         |
+| EKS Cluster Primary  | K8s cluster for monitoring Cluster for primary | t3.medium               | 3(1 control,2 node) | Replicated in us-west-1 |
+| EKS Cluster DR       | K8s cluster for monitoring Cluster for DR      | t3.medium               | 3(1 control,2 node) |                         |
+| VPC                  | Application Network                            | Replicated in us-west-1 |                     |                         |
+| VPC DR               | Application Network DR                         |                         |                     |                         |
+| Load balancer        | Application load balancer                      | Replicated in us-west-1 |                     |                         |
+| Load balancer DR     | Application load balancer for DR               |                         |                     |                         |
+| MySQL RDS            | Application Database                           | db.t3.micro             | 2(1 Master,1 slave) | replicated in us-west-1 |
+| MySQL RDS DR         | Application Database                           | db.t3.micro             | 2(1 Master,1 slave) |                         |
 
 ### Descriptions
-More detailed descriptions of each asset identified above.
+#### EC2 Instances
+
+The Main Application server that hosts the application, contains 3 EC 2 instances in both Zones
+
+#### EKS Cluster
+
+The Grafana prometheus monitoring cluster available in both zones. Each EKS cluster has 1 control panel and 2 worker nodes 
+
+#### VPC
+
+Your own virtual private network, allows Application and other infrastructure to talk to each other. Deployed in both zones
+#### Load Balancer 
+
+Handles user traffic to application server and distributes to all nodes in a availability zone to ensure HA   
+
+#### MySQL RDS Database
+
+A 2 node MySQL cluster available in both zones, with 5 days backup retention. The secondary zone replicates from primary zone
+
 
 ## DR Plan
 ### Pre-Steps:
 List steps you would perform to setup the infrastructure in the other region. It doesn't have to be super detailed, but high-level should suffice.
 
 ## Steps:
-You won't actually perform these steps, but write out what you would do to "fail-over" your application and database cluster to the other region. Think about all the pieces that were setup and how you would use those in the other region
+
+ - Check that Route 53 failover routing for the application endpoint has completed.
+ - Confirm the RDS cluster failed over.
+ - Confirm the failed over application instance is able to read/write from/to the failed over RDS cluster
