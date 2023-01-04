@@ -18,3 +18,4 @@
 ## Error Budget - Remaining Error Budget
 ### The error budget is 20%
 
+```1 - ((1 - (sum(increase(apiserver_request_total{code="200"}[7d]))) / sum(increase(apiserver_request_total[7d])) ) / (1 - .80))```

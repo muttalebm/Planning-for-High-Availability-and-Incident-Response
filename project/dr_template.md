@@ -3,7 +3,11 @@
 ## AWS Zones
 Primary Zone: `us-east-2`
 
+Availability Zones:`us-east-2a, us-east-2b`
+
 Secondary Zone: `us-west-1`
+
+Availability Zones: `us-west-1a,us-west-1b`
 
 ## Servers and Clusters
 
@@ -25,6 +29,7 @@ Secondary Zone: `us-west-1`
 #### EC2 Instances
 
 The Main Application server that hosts the application, contains 3 EC 2 instances in both Zones
+2 Key Pairs for 2 Regions
 
 #### EKS Cluster
 
@@ -41,13 +46,21 @@ Handles user traffic to application server and distributes to all nodes in a ava
 
 A 2 node MySQL cluster available in both zones, with 5 days backup retention. The secondary zone replicates from primary zone
 
+### S3 Buckets
+
+Two S3 buckets for terraform in two regions
 
 ## DR Plan
 ### Pre-Steps:
-List steps you would perform to setup the infrastructure in the other region. It doesn't have to be super detailed, but high-level should suffice.
+- 3 EC2 instances, in a separate Region with HA enabled
+- SSH keys for administering the EC2 instances
+- Backend database running on 3 Amazon RDS nodes for the website, which is replicated cluster from Region 1
+- Database backups stored in S3 for recovery
+- Load balancer for the API
+- Kubernetes cluster for monitoring stack
 
 ## Steps:
 
- - Check that Route 53 failover routing for the application endpoint has completed.
+ - Check that Route 53 fai  lover routing for the application endpoint has completed.
  - Confirm the RDS cluster failed over.
  - Confirm the failed over application instance is able to read/write from/to the failed over RDS cluster
